@@ -366,6 +366,22 @@
     ```
       "SELECT * FROM big_mac_wage_tour where DATE_SUB(updated_at, INTERVAL 9 HOUR)> :sql_last_value;"
     ```
+  - **방법2**
+    - CONVERT_TZ 함수를 사용해 DB에 Asia/Seoul 값으로 저장된 updated_at 를 UTC로 변환해서 비교
+    ```
+      "SELECT * FROM test WHERE CONVERT_TZ(updated_at, 'Asia/Seoul', 'UTC') > :sql_last_value"
+    ```
+    - 만약 DB가 설치된 환경에 Asia/Seoul 같은 시간대 정보가 없을 경우 (ubuntu 등)에는 tzdata 패키지를 설치 해야한다.
+    ```
+      sudo apt-get update
+      sudo apt-get install tzdata
+    ```
+    - 이후 시스템을 재부팅 한 뒤 변경 사항을 적용한다.
+    ```
+      sudo reboot
+      mysql 접속
+      SELECT CONVERT_TZ(NOW(), 'Asia/Seoul', 'UTC') AS test_time_conversion;
+    ```
 
 ## 🧐회고
 - 김예진
