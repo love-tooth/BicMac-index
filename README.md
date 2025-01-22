@@ -44,11 +44,12 @@
 
 ## 📌 목차
 
-1. [**빅맥 지수란**](#-빅맥-지수big-mac-index란)  
-2. [**아키텍처**](#-아키텍처)  
-3. [**데이터**](#-데이터)
-4. [**트러블슈팅**](#-트러블슈팅)
-5. [**회고**](#회고)
+1. [**빅맥 지수란?**](#-빅맥-지수big-mac-index란)
+2. [**시각화**](#-kibana-시각화)
+3. [**아키텍처**](#-아키텍처)  
+4. [**데이터**](#-데이터)
+5. [**트러블슈팅**](#-트러블슈팅)
+6. [**회고**](#회고)
 
 <br> 
 
@@ -341,7 +342,9 @@
     FLUSH PRIVILEGES;
     ```
     </details>
-    
+
+<br>
+
 ### 문제 2: 데이터 타입 오류
 - **문제**: 날짜 데이터인 'date' 컬럼이 날짜로 인식되지 않아, 날짜 필터링 및 시각화가 어려움
   
@@ -357,6 +360,8 @@
     }
   ```
 
+<br>
+
 ### 문제 3 : 스케줄링 오류
 - **문제** : logstash가 지속적으로 새로운 데이터를 받아오지 못함
 
@@ -367,21 +372,22 @@
     ```slq
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ```
-  
+<br>
+
 ### 문제 4 : 서버 시간 불일치
 - **문제** : logstash에 sql_last_value로 저장된 값과 updated_at을 비교할 수 없음
   
 - **원인** : logstash의 시간은 UTC 기준이고 MySQL은 'Asia/Seoul' 기준으로 저장되어 있음
   
 - **해결 방법**
-  - **방법1**
+  - **방법 1**
     - DATE_SUB 함수를 사용해 updated_at에 9시간을 빼서 계산함
     ```
       "SELECT * FROM big_mac_wage_tour where DATE_SUB(updated_at, INTERVAL 9 HOUR)> :sql_last_value;"
     ```
     - [big_mac_interval.conf](./logstash_conf/big_mac_interval.conf)
       
-  - **방법2**
+  - **방법 2**
     - CONVERT_TZ 함수를 사용해 DB에 Asia/Seoul 값으로 저장된 updated_at 를 UTC로 변환해서 비교
     ```
       "SELECT * FROM test WHERE CONVERT_TZ(updated_at, 'Asia/Seoul', 'UTC') > :sql_last_value"
@@ -399,7 +405,7 @@
     ```
     - [big_mac_convert_tz.conf](./logstash_conf/big_mac_convert_tz.conf)
       
-  - **방법3**
+  - **방법 3**
     - `unix_ts_in_secs` 표준 UNIX 타임스탬프를 사용해 타임스탬프를 일관되게 통일한다
     - `sql_last_value`를 통해 변경사항이 Elasticsearch에 적용된 삽입이나 업데이트가 Elasticsearch로 다시 전송되지 않도록 해준다.
     ```
