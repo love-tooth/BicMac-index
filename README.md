@@ -334,22 +334,41 @@
     FLUSH PRIVILEGES;
     ```
     </details>
+    
+### 문제 2
+- **문제**: 날짜 데이터인 'date' 컬럼이 날짜로 인식되지 않아, 날짜 필터링 및 시각화가 어려움
+- **원인**: 'date'컬럼이 문자열(String)로 저장되어 있어 형식으로 변환이 필요함
 
-### 문제 2: JDBC Scheduling 
-- **문제**: `timestamp`를 기준으로 데이터를 동기화하려 했으나, `sql_last_value`가 제대로 작동하지 않음
-- **원인**: MySQL의 `timestamp` 데이터 유형이 ES의 형식과 일치하지 않아 데이터 동기화 실패 
-- **해결 방법**
-  1. `timestamp` 데이터를 `datetime` 형식으로 변환
-  2. Logstash 설정에서 `tracking_column_type`을 명시적으로 추가
+### 해결 방법
+- Logstash 설정 파일(.conf)에서 'date' 필드를 타임스탬프(timestamp) 형식으로 변환하기 위해 date 필터를 추가
+``` logstash
+  date {
+    match => [ "date", "yyyyMMdd"]
+    timezone => "Asia/Seoul"
+    target => "date"
+  }
+```
 
-    <details>
-    <summary>Logstash 설정</summary>
-    ```plaintext
-    tracking_column_type => "timestamp"
-    ```
-    </details>
+### 문제 3
+- **문제** : logstash가 지속적으로 새로운 데이터를 받아오지 못함
+- **원인** : 새로운 데이터를 구분할 수 있는 컬럼이 없음
 
-  3. ElasticSearch에서 매핑을 수정하여 `timestamp` 형식을 지원하도록 설정
+### 해결 방법
+- updated_at 컬럼을 생성하여, 이 컬럼 기준으로 이후 데이터만 가져오는 방식으로 해결
+  ```slq
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ```
+  
+### 문제 4
+- **문제** : logstash에 sql_last_value로 저장된 값과 updated_at을 비교할 수 없음
+- **원인** : logstash의 시간은 UTC 기준이고 MySQL은 'Asia/Seoul' 기준으로 저장되어 있음
+
+### 해결방법
+- **방법1**
+  DATE_SUB 함수를 사용해 updated_at에 9시간을 빼서 계산함
+  ```
+    "SELECT * FROM big_mac_wage_tour where DATE_SUB(updated_at, INTERVAL 9 HOUR)> :sql_last_value;"
+  ```
 
 ## 🧐회고
 - 김예진
