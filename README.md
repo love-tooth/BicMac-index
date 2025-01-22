@@ -125,20 +125,22 @@
     input {
       jdbc {
         jdbc_connection_string => "jdbc:mysql://localhost:3306/bigmac_db"
-        jdbc_user => "root"
+        jdbc_user => "user"
         jdbc_password => "password"
         jdbc_driver_class => "com.mysql.cj.jdbc.Driver"
-        schedule => "* * * * *"
-        statement => "SELECT * FROM bigmac_table WHERE timestamp > :sql_last_value"
-        use_column_value => true
-        tracking_column => "timestamp"
+        statement => "SELECT * FROM big_mac_wage_tour where DATE_SUB(updated_at, INTERVAL 9 HOUR)> :sql_last_value;"  
+        use_column_value => true  
+        tracking_column => "updated_at"  
+        tracking_column_type => "timestamp"  
+        last_run_metadata_path => "C:/02.devEnv/ELK/logstash-7.11.1/bigmac-logstash-last-run-metadata"
+        schedule => "* * * * *"  
       }
     }
     
     output {
       elasticsearch {
         hosts => ["http://localhost:9200"]
-        index => "bigmac_index"
+        index => "big_mac_wage_tour"
       }
     }
     ```
@@ -158,7 +160,7 @@
 - **동기화 도구:** Logstash (JDBC Driver 활용)
 - **검색 및 분석 엔진:** ElasticSearch
 - **시각화 도구:** Kibana
-- **언어:** SQL, JSON
+- **언어:** SQL
 - **자동화 도구:** Logstash 스케줄링
 
 <br>
