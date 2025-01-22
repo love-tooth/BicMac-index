@@ -265,13 +265,13 @@ data_merged.to_csv(output_path, index=False)
 ## 📝 디렉토리 구조
 ```
 ├── logstash_config/
-│   └── logstash.conf
+│   └── big_mac_unix.conf
+│   └── big_mac_interval.conf
+│   └── big_mac_convert_tz.conf
 ├── sql_scripts/
 │   └── create_bigmac_table.sql
-├── elasticsearch_mappings/
-│   └── bigmac_mapping.json
-├── kibana_visualizations/
-│   └── bigmac_dashboard.ndjson
+├── data/
+│   └── bid_mac_wage_tour.csv
 └── README.md
 ```
 
