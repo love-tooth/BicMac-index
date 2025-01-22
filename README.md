@@ -205,7 +205,8 @@
 
 2. [Minimum Wages between 2001 & 2018](https://www.kaggle.com/datasets/frtgnn/minimum-wages-between-2001-2018)
   - 각국의 2001년부터 2018년 사이의 최저 임금 데이터셋
-  - 연도, 나라명, 최저임금 데이터로 구성 
+  - 연도, 나라명, 최저임금 데이터로 구성
+  - 예시 데이터 
 
     | Country   | 2001   | 2002   | 2003   | 2004   | 2005   |
     |-----------|--------|--------|--------|--------|--------|
@@ -217,7 +218,8 @@
 
 3. [세계관광지표](https://know.tour.go.kr/stat/worldTourStatSummaryDis19Re.do)
   - 156개국을 대상으로 UN Tourism의 여행객수, 관광수입 및 관광지출 데이터셋
-  - 연도, 나라명, 여행객수, 관광수입, 관광지출 데이터로 구성 
+  - 연도, 나라명, 여행객수, 관광수입, 관광지출 데이터로 구성
+  - 예시 데이터
 
     | 나라명                  | 2002년 | 2003년 | 2004년 | 2005년 |
     |-------------------------|--------|--------|--------|--------|
@@ -227,10 +229,9 @@
     | 덴마크(Denmark)         | 2      | 3.5    | 4.4    | 9.2    |
 
 
-### 데이터 전처리 
+### 데이터 전처리
 - 문제 상황 
   - 위 2, 3번 데이터셋의 경우, **교차 테이블(Cross-Tabulation Table)** 형식으로 이루어져 있었음
-
 
 - 데이터 전처리 
   - **행지향(Row-oriented)** 형식으로 변경
@@ -259,11 +260,11 @@
     income_long = income_data.melt(id_vars=['country'], var_name='year', value_name='income')  # 수입 데이터
     expenditure_long = expenditure_data.melt(id_vars=['country'], var_name='year', value_name='outcome')  # 지출 데이터
     
-    # 모든 데이터를 병합
+    # 데이터 병합
     data_merged = pd.merge(arrival_long, income_long, on=['country', 'year'], how='outer')
     data_merged = pd.merge(data_merged, expenditure_long, on=['country', 'year'], how='outer')
     
-    # 정리된 데이터를 CSV 파일로 저장
+    # CSV 파일로 저장
     output_path = 'tourism_data.csv'
     data_merged.to_csv(output_path, index=False)
     
@@ -277,9 +278,9 @@
   
 ### 최종 데이터셋 
 
-- 칼럼
+- 컬럼명 및 설명
 
-  | 칼럼명           | 설명                                      |
+  | 컬럼명           | 설명                                      |
   |------------------|-------------------------------------------|
   | date             | 데이터가 기록된 날짜                      |
   | iso_a3           | 국가의 ISO 3166-1 Alpha-3 코드 (3자리 국가 코드) |
