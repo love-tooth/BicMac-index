@@ -1,6 +1,6 @@
-DROP TABLE big_mac_wage;
+DROP TABLE big_mac_wage_tour;
 
-CREATE TABLE big_mac_wage (
+CREATE TABLE big_mac_wage_tour (
   date varchar(50) DEFAULT NULL,
   iso_a3 varchar(50) DEFAULT NULL,
   currency_code varchar(50) DEFAULT NULL,
@@ -24,5 +24,5 @@ CREATE TABLE big_mac_wage (
   visitors double DEFAULT NULL,
   income double DEFAULT NULL,
   outcome double DEFAULT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
