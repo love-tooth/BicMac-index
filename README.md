@@ -362,7 +362,7 @@
     ```
       "SELECT * FROM big_mac_wage_tour where DATE_SUB(updated_at, INTERVAL 9 HOUR)> :sql_last_value;"
     ```
-    - [big_mac_interval.conf](BicMac-index/logstash_conf/big_mac_interval.conf)
+    - [big_mac_interval.conf](./logstash_conf/big_mac_interval.conf)
   - **방법2**
     - CONVERT_TZ 함수를 사용해 DB에 Asia/Seoul 값으로 저장된 updated_at 를 UTC로 변환해서 비교
     ```
@@ -379,7 +379,7 @@
       mysql 접속
       SELECT CONVERT_TZ(NOW(), 'Asia/Seoul', 'UTC') AS test_time_conversion;
     ```
-    - [big_mac_convert_tz.conf](BicMac-index/logstash_conf/big_mac_convert_tz.conf)
+    - [big_mac_convert_tz.conf](./logstash_conf/big_mac_convert_tz.conf)
   - **방법3**
     - `unix_ts_in_secs` 표준 UNIX 타임스탬프를 사용해 타임스탬프를 일관되게 통일한다
     - `sql_last_value`를 통해 변경사항이 Elasticsearch에 적용된 삽입이나 업데이트가 Elasticsearch로 다시 전송되지 않도록 해준다.
@@ -391,7 +391,7 @@
     schedule => "* * * * *"
     statement => "SELECT *, UNIX_TIMESTAMP(updated_at) AS unix_ts_in_secs FROM big_mac_wage_tour WHERE (UNIX_TIMESTAMP(updated_at) > :sql_last_value AND updated_at < NOW()) ORDER BY updated_at ASC"
     ```
-    - [big_mac_unix.conf](BicMac-index/logstash_conf/big_mac_unix.conf)
+    - [big_mac_unix.conf](./logstash_conf/big_mac_unix.conf)
     
 
 ## 🧐회고
@@ -403,7 +403,7 @@
   - 이번 프로젝트를 통해 데이터 수집, 전처리, 시각화의 전 과정을 경험하고, mySQL과 ELK와의 파이프 라인을 구축하며 데이터 관리 및 분석의 중요성을 다시금 깨달았습니다. 또, 팀원들과의 협업을 통해 다양한 인사이트를 도출할 수 있었고, 문제 해결 능력을 키울 수 있는 기회가 되었습니다. 앞으로도 이러한 경험을 바탕으로 더 나은 데이터 분석 프로젝트에 도전하고 싶습니다.
     
 - 임하은
-  
+  - ELK를 사용해서 데이터를 실시간으로 처리하는 과정에서 일어나는 트러블슈팅을 통해 많이 성장할 수 있었던 거 같습니다. 또한 kibana를 통해 시각화를 하는 과정에서 원하는 index를 만들고 그래프를 구성하는 방법을 배우며, 데이터를 시각적으로 표현하는 방식이 효율적인 수단임을 실감할 수 있었습니다. 
 - 정파란
 
 
