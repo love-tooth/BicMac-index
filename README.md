@@ -97,6 +97,54 @@
     - why?
       - 미국은 2009년부터 15년동안 최저임금이 동결되었다.
       - 또한, 미국은 팁의 수익이 높기 때문에 확실한 분석을 위해서는 최저임금이 아닌 평균 수입으로 비교해야 했다.
+      
+
+## 🚀 설계
+
+### 아키텍처 
+![Flowcharts](https://github.com/user-attachments/assets/200c513a-145e-4577-abb4-b5318bf16903)
+
+
+
+1. **데이터 저장:** MySQL 데이터베이스에 최종 데이터셋 csv 파일 import 
+2. **Logstash 동기화:** Logstash의 JDBC 드라이버를 통해 MySQL에서 ES로 데이터를 1분 간격으로 스케쥴링 자동화
+    <details>
+    <summary>conf 파일 설정</summary>
+    
+    - **입력(Input):** MySQL 데이터베이스에서 데이터를 가져오는 JDBC 설정
+    - **필터(Filter):** 필요한 데이터만 추출하고 가공
+    - **출력(Output):** ElasticSearch로 데이터 전송
+  
+    ```plaintext
+    input {
+      jdbc {
+        jdbc_connection_string => "jdbc:mysql://localhost:3306/bigmac_db"
+        jdbc_user => "root"
+        jdbc_password => "password"
+        jdbc_driver_class => "com.mysql.cj.jdbc.Driver"
+        schedule => "* * * * *"
+        statement => "SELECT * FROM bigmac_table WHERE timestamp > :sql_last_value"
+        use_column_value => true
+        tracking_column => "timestamp"
+      }
+    }
+    
+    output {
+      elasticsearch {
+        hosts => ["http://localhost:9200"]
+        index => "bigmac_index"
+      }
+    }
+    ```
+    
+    - 스케줄링 설정
+      - Logstash는 `schedule` 옵션을 사용하여 1분마다 데이터 동기화
+    <details>
+    <summary>conf 파일 설정</summary>
+    
+
+
+3. **데이터 시각화:** Kibana 통한 데이터 시각화 및 인사이트 도출
 
 
 ## 🛠️ 사용 기술 스택 
@@ -106,6 +154,21 @@
 - **시각화 도구:** Kibana
 - **언어:** SQL, JSON
 - **자동화 도구:** Logstash 스케줄링
+
+
+## 📝 디렉토리 구조
+```
+├── logstash_config/
+│   └── big_mac_unix.conf
+│   └── big_mac_interval.conf
+│   └── big_mac_convert_tz.conf
+├── sql_scripts/
+│   └── create_bigmac_table.sql
+├── data/
+│   └── bid_mac_wage_tour.csv
+└── README.md
+```
+
 
 ## 🗂️ 데이터
 ### 활용 데이터셋 
@@ -134,8 +197,6 @@
     | JPY_adjusted | 조정된 JPY 가격 |
     | CNY_adjusted | 조정된 CNY 가격 |
     
-
-
 
 2. [Minimum Wages between 2001 & 2018](https://www.kaggle.com/datasets/frtgnn/minimum-wages-between-2001-2018)
   - 각국의 2001년부터 2018년 사이의 최저 임금 데이터셋
@@ -209,8 +270,6 @@
   - 각국의 이름과 연도 기준으로 하나의 테이블로 병합
  
   
-
-
 ### 최종 데이터셋 
 
 - 칼럼
@@ -254,69 +313,6 @@
 
 
 
-
-## 🚀 설계
-
-### 아키텍처 
-![Flowcharts](https://github.com/user-attachments/assets/200c513a-145e-4577-abb4-b5318bf16903)
-
-
-
-1. **데이터 저장:** MySQL 데이터베이스에 최종 데이터셋 csv 파일 import 
-2. **Logstash 동기화:** Logstash의 JDBC 드라이버를 통해 MySQL에서 ES로 데이터를 1분 간격으로 스케쥴링 자동화
-    <details>
-    <summary>conf 파일 설정</summary>
-    
-    - **입력(Input):** MySQL 데이터베이스에서 데이터를 가져오는 JDBC 설정
-    - **필터(Filter):** 필요한 데이터만 추출하고 가공
-    - **출력(Output):** ElasticSearch로 데이터 전송
-  
-    ```plaintext
-    input {
-      jdbc {
-        jdbc_connection_string => "jdbc:mysql://localhost:3306/bigmac_db"
-        jdbc_user => "root"
-        jdbc_password => "password"
-        jdbc_driver_class => "com.mysql.cj.jdbc.Driver"
-        schedule => "* * * * *"
-        statement => "SELECT * FROM bigmac_table WHERE timestamp > :sql_last_value"
-        use_column_value => true
-        tracking_column => "timestamp"
-      }
-    }
-    
-    output {
-      elasticsearch {
-        hosts => ["http://localhost:9200"]
-        index => "bigmac_index"
-      }
-    }
-    ```
-    
-    - 스케줄링 설정
-      - Logstash는 `schedule` 옵션을 사용하여 1분마다 데이터 동기화
-    <details>
-    <summary>conf 파일 설정</summary>
-    
-
-
-3. **데이터 시각화:** Kibana 통한 데이터 시각화 및 인사이트 도출
-
-
-## 📝 디렉토리 구조
-```
-├── logstash_config/
-│   └── big_mac_unix.conf
-│   └── big_mac_interval.conf
-│   └── big_mac_convert_tz.conf
-├── sql_scripts/
-│   └── create_bigmac_table.sql
-├── data/
-│   └── bid_mac_wage_tour.csv
-└── README.md
-```
-
-
 ## 🐞 트러블슈팅 
 
 ### 문제 1: 데이터베이스와 연결 오류
@@ -335,7 +331,7 @@
     ```
     </details>
     
-### 문제 2
+### 문제 2: 데이터 타입 오류
 - **문제**: 날짜 데이터인 'date' 컬럼이 날짜로 인식되지 않아, 날짜 필터링 및 시각화가 어려움
 - **원인**: 'date'컬럼이 문자열(String)로 저장되어 있어 형식으로 변환이 필요함
 - **해결 방법**
@@ -348,16 +344,16 @@
     }
   ```
 
-### 문제 3
+### 문제 3 : 스케줄링 오류
 - **문제** : logstash가 지속적으로 새로운 데이터를 받아오지 못함
 - **원인** : 새로운 데이터를 구분할 수 있는 컬럼이 없음
-- ### 해결 방법
+- **해결 방법**
   - updated_at 컬럼을 생성하여, 이 컬럼 기준으로 이후 데이터만 가져오는 방식으로 해결
     ```slq
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ```
   
-### 문제 4
+### 문제 4 : 서버 시간 불일치
 - **문제** : logstash에 sql_last_value로 저장된 값과 updated_at을 비교할 수 없음
 - **원인** : logstash의 시간은 UTC 기준이고 MySQL은 'Asia/Seoul' 기준으로 저장되어 있음
 - **해결 방법**
@@ -366,6 +362,7 @@
     ```
       "SELECT * FROM big_mac_wage_tour where DATE_SUB(updated_at, INTERVAL 9 HOUR)> :sql_last_value;"
     ```
+    - [big_mac_interval.conf](BicMac-index/logstash_conf/big_mac_interval.conf)
   - **방법2**
     - CONVERT_TZ 함수를 사용해 DB에 Asia/Seoul 값으로 저장된 updated_at 를 UTC로 변환해서 비교
     ```
@@ -382,6 +379,20 @@
       mysql 접속
       SELECT CONVERT_TZ(NOW(), 'Asia/Seoul', 'UTC') AS test_time_conversion;
     ```
+    - [big_mac_convert_tz.conf](BicMac-index/logstash_conf/big_mac_convert_tz.conf)
+  - **방법3**
+    - `unix_ts_in_secs` 표준 UNIX 타임스탬프를 사용해 타임스탬프를 일관되게 통일한다
+    - `sql_last_value`를 통해 변경사항이 Elasticsearch에 적용된 삽입이나 업데이트가 Elasticsearch로 다시 전송되지 않도록 해준다.
+    ```
+    jdbc_paging_enabled => true
+    tracking_column => "unix_ts_in_secs"
+    use_column_value => true
+    tracking_column_type => "numeric"
+    schedule => "* * * * *"
+    statement => "SELECT *, UNIX_TIMESTAMP(updated_at) AS unix_ts_in_secs FROM big_mac_wage_tour WHERE (UNIX_TIMESTAMP(updated_at) > :sql_last_value AND updated_at < NOW()) ORDER BY updated_at ASC"
+    ```
+    - [big_mac_unix.conf](BicMac-index/logstash_conf/big_mac_unix.conf)
+    
 
 ## 🧐회고
 - 김예진
